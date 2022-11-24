@@ -98,14 +98,14 @@ class Cache {
             .digest("hex");
     }
 
-    async cacheResponse(request) {
-        const expires = +new Date(request.headers.expires) - +new Date(request.headers.date);
+    async cacheResponse(response) {
+        const expires = +new Date(response.headers.expires) - +new Date(response.headers.date);
         const data = JSON.stringify({
-            status: request.status,
-            statusText: request.statusText,
-            headers: request.headers,
-            data: request.data,
-            url: request.url
+            status: response.status,
+            statusText: response.statusText,
+            headers: response.headers,
+            data: response.data,
+            url: response.url,
         });
 
         return await this.config.redis.setex(this.hash, expires / 1000 + 1, data);
