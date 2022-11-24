@@ -38,7 +38,7 @@ async function ETagCacheAdapter(request) {
     if (request.redis) {
         // Check if we have the resposne cached. If we do use that
         const rawCachedResponse = await request.redis.get(`${requestKey}:response`);
-        if (cacheResults) {
+        if (rawCachedResponse) {
             const cachedResponse = JSON.parse(rawCachedResponse);
             cachedResponse.cached = true;
             cachedResponse.config = request;
