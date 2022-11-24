@@ -8,11 +8,17 @@ async function request(config) {
 
   config.url = (config.version || "latest") + config.url;
 
-  if (config.model && config.token instanceof config.model) {
-    if (config.token.isExpired()) await config.token.refresh();
+  // Determine the token. If it is a string, then just use it. Otherwise, call the function and see if it is valid
+  let token = null;
+  if (typeof config.token === 'string' || config.token instanceof String) {
+    token = config.token;
+  } else if (config.token !== null) {
+    token = await config.token();
+  }
 
+  if (token != null) { 
     config.headers = {
-      Authorization: "Bearer " + config.token.access_token
+      Authorization: `Bearer ${token}`
     };
   }
 
