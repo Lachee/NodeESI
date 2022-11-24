@@ -84,6 +84,7 @@ class Cache {
   getHash() {
     const data = JSON.stringify({
       url: this.config.url,
+      params: this.config.params,
       method: this.config.method,
       auth: this.config.headers.Authorization
     });
