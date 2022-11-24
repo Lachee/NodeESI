@@ -179,5 +179,6 @@ function createHashFromRequest(request) {
 
 module.exports = {
     CacheAdapter,
-    EsiAdapter
+    EsiAdapter,
+    ETagCacheAdapter
 };
