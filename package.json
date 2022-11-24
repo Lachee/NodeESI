@@ -1,15 +1,18 @@
 {
   "name": "node-esi",
-  "version": "1.0.5",
+  "version": "1.1.0",
   "description": "Node ESI Client",
-  "url": "https://github.com/Flupster/NodeESI",
+  "url": "https://github.com/Lachee/NodeESI",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Flupster/NodeESI.git"
+    "url": "https://github.com/Lachee/NodeESI.git"
   },
   "main": "src/index.js",
   "scripts": {},
   "author": "Flupster",
+  "contributors": [
+    "Lachee"
+  ],
   "license": "MIT",
   "dependencies": {
     "axios": "^0.18.1",
