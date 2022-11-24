@@ -51,5 +51,5 @@ instance.manager = ConcurrencyManager(
 );
 
 //Cache
-instance.cache = uri => (instance.defaults.redis = new Redis(uri));
+instance.cache = uri => (instance.defaults.redis = uri instanceof Redis ? uri : new Redis(uri));
 module.exports = instance;
