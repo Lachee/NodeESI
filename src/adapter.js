@@ -102,14 +102,17 @@ async function makeRequest(request) {
         /*
          * If no response throw the exception
          */
+        if (!ex.response) 
+            throw ex;
 
-        if (!ex.response) throw ex;
+        // 304's are fine, axios is being a pain
+        if (ex.response.status === 304)
+            return ex.response;
 
         /*
          * If the error is a 502, then CCP's API isn't doing well
          * We combat this by retrying it up to 3 times
          */
-
         if ([502, 504].includes(ex.response.status)) {
             request.retries = request.retries ? request.retries + 1 : 1;
             if (request.retries > 3) throw ex;
@@ -120,7 +123,6 @@ async function makeRequest(request) {
          * If the ratelimit is less than 10 remaining requests
          * sleep until the ratelimit is reset then throw the exception
          */
-
         if (ex.response.headers["x-esi-error-limit-remain"] < 10) {
             const reset = ex.response.headers["x-esi-error-limit-reset"];
             console.warn(`NodeESI: Ratelimit has been reached, sleeping for ${reset}s`);
