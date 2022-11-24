@@ -12,7 +12,7 @@ async function request(config) {
   let token = null;
   if (typeof config.token === 'string' || config.token instanceof String) {
     token = config.token;
-  } else if (config.token !== null) {
+  } else if (config.token != null) {
     token = await config.token();
   }
 
