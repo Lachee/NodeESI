@@ -4,14 +4,12 @@ const https = require("https");
 const httpsAgent = new https.Agent({ keepAlive: true });
 const package = require("../package.json");
 const { ConcurrencyManager } = require("axios-concurrency");
-const { Model } = require("objection");
 const Redis = require("ioredis");
 
 const instance = axios.create({
   baseURL: "https://esi.evetech.net/",
   timeout: 11000,
   httpsAgent,
-  model: require("./Token"),
   redis: null,
 });
 
@@ -28,7 +26,6 @@ instance.getPages = r => {
     instance({
       method: r.config.method,
       url: r.config.url.split("/").slice(4).join("/"),
-      model: r.config.model,
       params: { ...r.config.params, page },
     })
   );
@@ -46,9 +43,6 @@ instance.interceptors.response.use(
   interceptors.response,
   interceptors.responseError
 );
-
-//DB Binding
-instance.knex = knex => Model.knex(knex);
 
 //Concurrency Binding
 instance.manager = ConcurrencyManager(

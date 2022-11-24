@@ -36,47 +36,16 @@ Esi.manager = ConcurrencyManager(Esi, 5);
 
 ### SSO Auth
 
-Node ESI uses [Objection](https://github.com/Vincit/objection.js/) ORM for managing tokens, the default model located at src/Token.js but you can supply your own Objection model, for more information please read the docs for the Token object at src/Token.js
-
-Knex is an important part of authentication which manages the DB connection, you need to bind knex to the client before making any database calls
-
-This can be fully managed in your own Token.js logic or via Node ESI
-
-```javascript
-const Esi = require("node-esi");
-const Token = require("path_to_custom_objection_model"); //Custom
-const Knex = require("knex");
-const db = Knex({
-    client: "mysql",
-    useNullAsDefault: true,
-    connection: {
-      host: "127.0.0.1",
-      user: "user_name",
-      password: "password",
-      database: "database_name",
-      charset: "utf8mb4",
-      supportBigNumbers: true,
-      bigNumberStrings: true
-    },
-    pool: { min: 1, max: 5 }
-});
-
-Esi.knex(db);
-Esi.defaults.model = Token;
-```
+Use your own stuff
 
 ### Examples
 
 ```javascript
 const Esi = require("node-esi");
-const Token = require("node-esi/Token");
-const Knex = require("knex"); 
-
-Esi.knex(Knex({})) //knex config...
 
 (async () => {
-    //Load a token with Objection
-    const token = await Token.query().where({character_name: 'Falopadous'}).first();
+    // Load a token as a string
+    const token = await fetchTokenFromStorage();
 
     //Non Authed Request
     const alliances = await Esi('alliances');
@@ -84,10 +53,12 @@ Esi.knex(Knex({})) //knex config...
     //Authed request
     const assets = await Esi(`characters/${token.character_id}/assets`, { token });
     
-    //Versioning
+    //Versioning & Token as a function
     const fleet = await Esi(`characters/${token.character_id}/fleet`, { 
         version: 'dev',
-        token: token
+        token: async () => {
+            return await fetchTokenFromStorage()
+        }
     });
 
     console.log("Request data", alliances.data)
