@@ -2,6 +2,11 @@
 
 Node ESI is a wrapper for the common http library [Axios](https://github.com/axios/axios) reading the docs for Axios will give you an idea of how Node ESI works
 
+### Install
+```
+npm i --save lachee/nodeesi
+```
+
 ### Usage
 
 ```javascript
