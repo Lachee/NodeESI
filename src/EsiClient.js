@@ -7,47 +7,47 @@ const { ConcurrencyManager } = require("axios-concurrency");
 const Redis = require("ioredis");
 
 const instance = axios.create({
-  baseURL: "https://esi.evetech.net/",
-  timeout: 11000,
-  httpsAgent,
-  redis: null,
+    baseURL: "https://esi.evetech.net/",
+    timeout: 11000,
+    httpsAgent,
+    redis: null,
 });
 
 instance.defaults.headers.common["User-Agent"] =
-  process.env.AXIOS_USER_AGENT ||
-  `NodeESI v${package.version} - ${package.url}`;
+    process.env.AXIOS_USER_AGENT ||
+    `NodeESI v${package.version} - ${package.url}`;
 
 //Helper function for getting all pages of a request
 instance.getPages = r => {
-  const pages = parseInt(r.headers["x-pages"]) + 1;
-  const range = [...Array(pages).keys()].slice(1);
+    const pages = parseInt(r.headers["x-pages"]) + 1;
+    const range = [...Array(pages).keys()].slice(1);
 
-  const requests = range.map(page =>
-    instance({
-      method: r.config.method,
-      url: r.config.url.split("/").slice(4).join("/"),
-      params: { ...r.config.params, page },
-    })
-  );
+    const requests = range.map(page =>
+        instance({
+            method: r.config.method,
+            url: r.config.url.split("/").slice(4).join("/"),
+            params: { ...r.config.params, page },
+        })
+    );
 
-  return Promise.all(requests);
+    return Promise.all(requests);
 };
 
 //Setup Interceptors
 instance.interceptors.request.use(
-  interceptors.request,
-  interceptors.requestError
+    interceptors.request,
+    interceptors.requestError
 );
 
 instance.interceptors.response.use(
-  interceptors.response,
-  interceptors.responseError
+    interceptors.response,
+    interceptors.responseError
 );
 
 //Concurrency Binding
 instance.manager = ConcurrencyManager(
-  instance,
-  process.env.ESI_CONCURRENCY || 10
+    instance,
+    process.env.ESI_CONCURRENCY || 10
 );
 
 //Cache
