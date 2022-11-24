@@ -23,7 +23,7 @@ async function request(config) {
     }
 
     //If we have redis connection assume using cache adapter
-    config.adapter = config.redis ? adapters.CacheAdapter : adapters.EsiAdapter;
+    config.adapter = config.redis ? adapters.ETagCacheAdapter : adapters.EsiAdapter;
     return config;
 }
 

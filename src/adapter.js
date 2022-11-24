@@ -30,7 +30,71 @@ async function CacheAdapter(request) {
     return response;
 }
 
-/** Makes ar equest */
+/** Adapter for Redis that uses ETags */
+async function ETagCacheAdapter(request) {
+    const requestKey = createHashFromRequest(request);
+    let etagObject = null;
+    
+    if (request.redis) {
+        // Check if we have the resposne cached. If we do use that
+        const rawCachedResponse = await request.redis.get(`${requestKey}:response`);
+        if (cacheResults) {
+            const cachedResponse = JSON.parse(rawCachedResponse);
+            cachedResponse.cached = true;
+            cachedResponse.config = request;
+            return cachedResponse;
+        }
+
+        // Load the etag
+        const rawEtagResponse = await request.redis.get(`${requestKey}:etag`);
+        if (rawEtagResponse) {
+            etagObject = JSON.parse(rawEtagResponse);
+        }
+    }
+
+    request.adapter = axios.default.adapter;
+    if (etagObject != null)
+        request.headers['If-None-Match'] = etagObject.etag;
+
+    // Make the request. If we get 304 that means we should just reuse the etag object.
+    const response = await makeRequest(request);
+    if (response.status === 304) {
+        response.data = etagObject.data;
+        response.cached = 'etag';
+        return response;
+    }
+
+    // If it exires, lets cache the response
+    if (request.redis) {
+        let expires = 600000;
+
+        // Cache the response
+        if (response.headers.expires) {
+            expires = +new Date(response.headers.expires) - +new Date(response.headers.date);
+            const responseData = JSON.stringify({
+                url: response.url,
+                status: response.status,
+                statusText: response.statusText,
+                headers: response.headers,
+                data: response.data,
+            });
+
+            await request.redis.setex(`${requestKey}:response`, expires / 1000 + 1, responseData);
+        }
+
+        // Cache the etag object
+        const etagData = JSON.stringify({
+            etag: response.headers.etag,
+            data: response.data
+        });
+        await request.redis.setex(`${requestKey}:etag`, (expires*10) / 1000 + 1, etagData);
+    }
+
+    response.cached = false;
+    return response;
+}
+
+/** Makes a request */
 async function makeRequest(request) {
     try {
         return await axios(request);
@@ -73,29 +137,15 @@ async function makeRequest(request) {
 }
 
 class Cache {
-    constructor(config) {
-        this.config = config;
-        this.hash = this.getHash(config);
+    constructor(request) {
+        this.config = request;
+        this.hash = createHashFromRequest(request);
     }
 
     async check() {
         this.cache = await this.config.redis.get(this.hash);
         this.exists = Boolean(this.cache);
         this.response = JSON.parse(this.cache);
-    }
-
-    getHash() {
-        const data = JSON.stringify({
-            url: this.config.url,
-            params: this.config.params,
-            method: this.config.method,
-            auth: this.config.headers.Authorization
-        });
-
-        return crypto
-            .createHash("sha1")
-            .update(data)
-            .digest("hex");
     }
 
     async cacheResponse(response) {
@@ -110,6 +160,21 @@ class Cache {
 
         return await this.config.redis.setex(this.hash, expires / 1000 + 1, data);
     }
+}
+
+/** Creates a hash string representing the given request */
+function createHashFromRequest(request) {
+    const data = JSON.stringify({
+        method: request.method,
+        url:    request.url,
+        params: request.params,
+        auth:   request.headers.Authorization
+    });
+
+    return crypto
+        .createHash("sha1")
+        .update(data)
+        .digest("hex");
 }
 
 module.exports = {
