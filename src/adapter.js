@@ -1,11 +1,12 @@
 const instance = require("./index");
 const crypto = require("crypto");
 const axios = require("axios");
+const httpAdapter = require('axios/lib/adapters/http');
 const sleep = require("util").promisify(setTimeout);
 
 /** Adapter for regular requests */
 async function EsiAdapter(request) {
-    request.adapter = axios.default.adapter;
+    request.adapter = httpAdapter;
     return await makeRequest(request);
 }
 
@@ -20,7 +21,7 @@ async function CacheAdapter(request) {
         return cache.response;
     }
 
-    request.adapter = axios.default.adapter;
+    request.adapter = httpAdapter;
     const response = await makeRequest(request);
     if (response.headers.expires) {
         cache.cacheResponse(response);
@@ -52,7 +53,7 @@ async function ETagCacheAdapter(request) {
         }
     }
 
-    request.adapter = axios.default.adapter;
+    request.adapter = httpAdapter;
     if (etagObject != null)
         request.headers['If-None-Match'] = etagObject.etag;
 
