@@ -1,6 +1,6 @@
 {
   "name": "node-esi",
-  "version": "1.1.7",
+  "version": "1.1.6",
   "description": "Node ESI Client",
   "url": "https://github.com/Lachee/NodeESI",
   "repository": {
@@ -15,7 +15,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "axios": "~1.1.3",
+    "axios": "^1.1.3",
     "axios-concurrency": "^1.0.3",
     "dotenv": "^8.2.0",
     "https": "^1.0.0",
