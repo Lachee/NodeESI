@@ -94,7 +94,7 @@ async function ETagCacheAdapter(request) {
 /** Makes a request */
 async function makeRequest(request) {
     try {
-        return await axios(request);
+        return await axios(request, { adapter: null });
     } catch (ex) {
         /*
          * If no response throw the exception
